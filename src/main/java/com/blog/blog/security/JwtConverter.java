@@ -1,5 +1,6 @@
 package com.blog.blog.security;
 
+import com.blog.blog.dto.UserCreate;
 import com.blog.blog.entities.User;
 import com.blog.blog.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -27,12 +28,16 @@ public class JwtConverter implements Converter<Jwt, AbstractAuthenticationToken>
     @Value("${jwt.auth.converter.principle-attribute}")
     private String principleAttribute;
 
+    @Value("${jwt.auth.converter.email}")
+    private String email;
+
     @Override
     public AbstractAuthenticationToken convert(@NonNull Jwt source) {
-        User user = userService.loadUser(source.getClaim(principleAttribute));
+        UserCreate userCreate = new UserCreate(source.getClaim(email), source.getClaim(principleAttribute));
+        User user = userService.loadUser(userCreate);
+
         List<GrantedAuthority> authorities = jwtGrantedAuthoritiesConverter.convert(source).stream().toList();
+
         return new MyAuthenticationToken(null, user, authorities);
     }
-
-
 }
