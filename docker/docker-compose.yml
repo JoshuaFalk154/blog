@@ -9,7 +9,7 @@ services:
 #      POSTGRES_PASSWORD: password
 
   keycloak:
-    image: quay.io/keycloak/keycloak:24.0.1
+    image: keycloak/keycloak
     command: [ "start-dev", "--import-realm" ]
     environment:
       DB_VENDOR: POSTGRESQL
@@ -25,3 +25,4 @@ services:
      - ./keycloak/realms:/opt/keycloak/data/import/
 #    depends_on:
 #      - keycloak-postgres
+
