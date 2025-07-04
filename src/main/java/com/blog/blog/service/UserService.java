@@ -23,7 +23,7 @@ public class UserService {
 
     public User createUser(@Valid UserCreate userCreate) {
         User user = User.builder()
-                .email(userCreate.email())
+                .username(userCreate.username())
                 .sub(userCreate.sub())
                 .build();
 

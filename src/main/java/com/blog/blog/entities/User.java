@@ -17,7 +17,7 @@ public class User {
     private long id;
 
     @Column(unique = true)
-    private String email;
+    private String username;
 
     @Column(unique = true)
     private String sub;

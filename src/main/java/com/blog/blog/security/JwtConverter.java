@@ -28,16 +28,16 @@ public class JwtConverter implements Converter<Jwt, AbstractAuthenticationToken>
     @Value("${jwt.auth.converter.principle-attribute}")
     private String principleAttribute;
 
-    @Value("${jwt.auth.converter.email}")
-    private String email;
+    @Value("${jwt.auth.converter.username}")
+    private String username;
 
     @Override
     public AbstractAuthenticationToken convert(@NonNull Jwt source) {
-        UserCreate userCreate = new UserCreate(source.getClaim(email), source.getClaim(principleAttribute));
+        UserCreate userCreate = new UserCreate(source.getClaim(username), source.getClaim(principleAttribute));
         User user = userService.loadUser(userCreate);
 
         List<GrantedAuthority> authorities = jwtGrantedAuthoritiesConverter.convert(source).stream().toList();
 
-        return new MyAuthenticationToken(null, user, authorities);
+        return new MyAuthenticationToken(source, user, authorities);
     }
 }
