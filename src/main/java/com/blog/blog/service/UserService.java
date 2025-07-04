@@ -18,7 +18,7 @@ public class UserService {
 
     public User loadUser(@Valid UserCreate userCreate) {
         return userRepository.findBySub(userCreate.sub())
-                .orElse(createUser(userCreate));
+                .orElseGet(() -> createUser(userCreate));
     }
 
     public User createUser(@Valid UserCreate userCreate) {

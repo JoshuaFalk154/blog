@@ -4,30 +4,27 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Setter
-@Table(name = "users")
-public class User {
+@Table(name = "posts")
+public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
-    @Column(unique = true)
-    private String username;
+    @Column()
+    private String title;
 
-    @Column(unique = true)
-    private String sub;
+    @Column()
+    private String body;
 
     @Column
     @CreationTimestamp
@@ -37,6 +34,7 @@ public class User {
     @UpdateTimestamp
     private Date updatedAt;
 
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Post> posts;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id")
+    private User author;
 }
