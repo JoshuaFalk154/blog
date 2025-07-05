@@ -5,9 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -16,40 +14,30 @@ import java.util.Objects;
 @Builder
 @Getter
 @Setter
-@Table(name = "posts")
-public class Post {
+@Table(name = "likes")
+public class Like {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
-    @Column()
-    private String title;
-
-    @Column()
-    private String body;
-
     @Column
     @CreationTimestamp
     private Date createdAt;
 
-    @Column
-    @UpdateTimestamp
-    private Date updatedAt;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id")
-    private User author;
+    private User user;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Like> likes = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private Post post;
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        Post post = (Post) o;
-        return id == post.id;
+        Like like = (Like) o;
+        return id == like.id;
     }
 
     @Override
@@ -57,17 +45,8 @@ public class Post {
         return Objects.hashCode(id);
     }
 
-    public void addLike(Like like) {
-        likes.add(like);
-        like.setPost(this);
-    }
-
-    public void removeLike(Like like) {
-        likes.remove(like);
-        like.setPost(null);
-    }
-
     public void remove() {
-        author.removePost(this);
+        user.removeLike(this);
+        post.removeLike(this);
     }
 }

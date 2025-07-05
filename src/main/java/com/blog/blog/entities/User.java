@@ -1,21 +1,22 @@
 package com.blog.blog.entities;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Setter
+@Getter
 @Table(name = "users")
 public class User {
 
@@ -37,6 +38,44 @@ public class User {
     @UpdateTimestamp
     private Date updatedAt;
 
+    @Builder.Default
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Post> posts;
+    private List<Post> posts = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Like> likes = new ArrayList<>();
+
+    public Post addPost(Post post) {
+        posts.add(post);
+        post.setAuthor(this);
+        return post;
+    }
+
+    public void removePost(Post post) {
+        posts.remove(post);
+        post.setAuthor(null);
+    }
+
+    public void addLike(Like like) {
+        likes.add(like);
+        like.setUser(this);
+    }
+
+    public void removeLike(Like like) {
+        likes.remove(like);
+        like.setUser(null);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id == user.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
 }
