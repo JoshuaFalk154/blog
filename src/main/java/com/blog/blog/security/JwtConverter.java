@@ -1,6 +1,6 @@
 package com.blog.blog.security;
 
-import com.blog.blog.dto.UserCreate;
+import com.blog.blog.dto.UserLoad;
 import com.blog.blog.entities.User;
 import com.blog.blog.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.stereotype.Service;
 
@@ -33,8 +32,8 @@ public class JwtConverter implements Converter<Jwt, AbstractAuthenticationToken>
 
     @Override
     public AbstractAuthenticationToken convert(@NonNull Jwt source) {
-        UserCreate userCreate = new UserCreate(source.getClaim(username), source.getClaim(principleAttribute));
-        User user = userService.loadUser(userCreate);
+        UserLoad userLoad = new UserLoad(source.getClaim(username), source.getClaim(principleAttribute));
+        User user = userService.loadUser(userLoad);
 
         List<GrantedAuthority> authorities = jwtGrantedAuthoritiesConverter.convert(source).stream().toList();
 

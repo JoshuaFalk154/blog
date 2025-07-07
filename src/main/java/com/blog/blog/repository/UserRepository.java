@@ -5,10 +5,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findBySub(String sub);
     boolean existsUserBySubNotAndUsername(String sub, String username);
     boolean existsUserByUsername(String username);
+    boolean existsUserBySub(String sub);
 
 }
