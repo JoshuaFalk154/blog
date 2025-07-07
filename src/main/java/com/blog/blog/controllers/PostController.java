@@ -5,7 +5,9 @@ import com.blog.blog.dto.PostCreated;
 import com.blog.blog.entities.Post;
 import com.blog.blog.entities.User;
 import com.blog.blog.service.PostService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,11 +23,11 @@ public class PostController {
     final private PostService postService;
 
     @PostMapping
-    public ResponseEntity<PostCreated> addPost(@AuthenticationPrincipal User user, @RequestBody  PostCreate postCreate) {
+    public ResponseEntity<PostCreated> addPost(@AuthenticationPrincipal User user, @Valid @RequestBody  PostCreate postCreate) {
         Post post = postService.addPost(user, postCreate);
         PostCreated postCreated = new PostCreated(post.getId(), post.getCreatedAt());
 
-        return ResponseEntity.ok().body(postCreated);
+        return new ResponseEntity<>(postCreated, HttpStatus.CREATED);
     }
 
 }
