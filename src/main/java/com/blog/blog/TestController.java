@@ -5,6 +5,7 @@ import com.blog.blog.entities.User;
 import com.blog.blog.repository.PostRepository;
 import com.blog.blog.repository.UserRepository;
 import com.blog.blog.service.UserService;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,7 @@ public class TestController {
 //        SecurityContext x = SecurityContextHolder.getContext();
 //        return "hello world";
 //    }
+    //@Schema(name = "keycloak_oauth", requiredMode = Schema.RequiredMode.REQUIRED)
     @GetMapping("/test")
     @Transactional
     public String test(@AuthenticationPrincipal User user) {
