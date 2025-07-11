@@ -12,10 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Post", description = "Operations related to posts")
 @RequiredArgsConstructor
@@ -29,7 +26,7 @@ public class PostController {
     @PostMapping
     public ResponseEntity<PostCreated> addPost(@AuthenticationPrincipal User user, @Valid @RequestBody  PostCreate postCreate) {
         Post post = postService.addPost(user, postCreate);
-        PostCreated postCreated = new PostCreated(post.getId(), post.getCreatedAt(), post.getAuthor().getId());
+        PostCreated postCreated = new PostCreated(post.getId(), post.getCreatedAt(), post.getAuthor().getEmail());
 
         return new ResponseEntity<>(postCreated, HttpStatus.CREATED);
     }
