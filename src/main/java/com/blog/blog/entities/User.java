@@ -23,7 +23,7 @@ public class User {
     private UUID id;
 
     @Column(unique = true)
-    private String username;
+    private String email;
 
     @Column(unique = true)
     private String sub;

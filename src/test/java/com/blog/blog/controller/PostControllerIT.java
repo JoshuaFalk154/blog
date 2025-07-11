@@ -47,7 +47,7 @@ public class PostControllerIT {
 
     @BeforeEach
     void before() {
-        user = userService.loadUser(new UserLoad("username", "somesub"));
+        user = userService.loadUser(new UserLoad("mail@mail.com", "somesub"));
     }
 
 

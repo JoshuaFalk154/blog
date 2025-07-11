@@ -19,5 +19,4 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(new ExceptionResponse(customException));
     }
-
 }

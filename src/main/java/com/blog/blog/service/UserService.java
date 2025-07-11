@@ -23,7 +23,7 @@ public class UserService {
      * Loads user if exists from the database. It also updates the attributes, if they changed. Else creates a user and returns it.
      * @param userLoad The user to create or load from the database. Sub is used to load the user.
      * @return Retrieved or created user
-     * @throws UserAlreadyExists If another user with unique attributes (besides sub) already exists.
+     * @throws UserAlreadyExists If another user with unique attributes from userLoad (besides sub) already exists.
      */
     @Transactional
     public User loadUser(@Valid UserLoad userLoad) {
@@ -31,19 +31,19 @@ public class UserService {
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
 
-            if (userRepository.existsUserBySubNotAndUsername(userLoad.sub(), userLoad.username())) {
-                throw new UserAlreadyExists(String.format("User with different sub but same username %s already exists", userLoad.username()));
+            if (userRepository.existsUserBySubNotAndEmail(userLoad.sub(), userLoad.email())) {
+                throw new UserAlreadyExists(String.format("User with different sub but same email %s already exists", userLoad.email()));
             }
 
-            user.setUsername(userLoad.username());
+            user.setEmail(userLoad.email());
             return userRepository.save(user);
         } else {
-            if (userRepository.existsUserByUsername(userLoad.username())) {
-                throw new UserAlreadyExists(String.format("User with different sub but same username %s already exists", userLoad.username()));
+            if (userRepository.existsUserByEmail(userLoad.email())) {
+                throw new UserAlreadyExists(String.format("User with different sub but same email %s already exists", userLoad.email()));
             }
 
             User user = User.builder()
-                    .username(userLoad.username())
+                    .email(userLoad.email())
                     .sub(userLoad.sub())
                     .build();
 
