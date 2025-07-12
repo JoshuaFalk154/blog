@@ -5,6 +5,7 @@ import com.blog.blog.entities.Post;
 import com.blog.blog.entities.User;
 import com.blog.blog.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class PostController {
 
     final private PostService postService;
 
-    @Operation(summary = "Add a post", description = "Add a post to the currently logged in user")
+    @Operation(summary = "Add a post", description = "Creates a new post for the currently authenticated user")
     @PostMapping
     public ResponseEntity<PostCreated> addPost(@AuthenticationPrincipal User user, @Valid @RequestBody PostCreate postCreate) {
         Post post = postService.addPost(user, postCreate);
@@ -33,27 +34,28 @@ public class PostController {
         return new ResponseEntity<>(postCreated, HttpStatus.CREATED);
     }
 
-    @Operation(summary = "Get a post", description = "Get a post by it's id")
+    @Operation(summary = "Return a post by ID", description = "Returns a post by its ID. It also contains the author's email as well as the number of likes")
     @GetMapping("/{postId}")
-    public ResponseEntity<PostSingle> getPost(@AuthenticationPrincipal User user, @PathVariable UUID postId) {
-        Post post = postService.getPost(postId);
-        PostSingle result = new PostSingle(post.getTitle(), post.getBody(), post.getAuthor().getEmail(), post.getCreatedAt(), post.getUpdatedAt());
+    public ResponseEntity<PostFull> getPost(@AuthenticationPrincipal User user, @PathVariable UUID postId) {
+        PostFull postFull = postService.getPost(postId);
 
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        return new ResponseEntity<>(postFull, HttpStatus.OK);
     }
 
-    @Operation(summary = "Get posts", description = "Get the posts in the specified page with specified number of posts for each page")
+
+    @Operation(summary = "Return a page of posts",
+            description = "Returns a page of posts. Each post contains the author's email as well as the number of likes. You can optionally filter posts by their title"
+    )
     @GetMapping
-    public ResponseEntity<PostPage<PostExplore>> getPosts(
-            @RequestParam(value = "pageNo", defaultValue = "1", required = false) int pageNumber,
-            @RequestParam(value = "pageSize", defaultValue = "25", required = false) int pageSize,
-            @RequestParam(value = "contains", defaultValue = "", required = false) String contains
+    public ResponseEntity<PostPage<PostExplore>> getPostPage(
+            @Parameter(description = "Page number to retrieve") @RequestParam(value = "pageNo", defaultValue = "1", required = false) int pageNumber,
+            @Parameter(description = "Number of posts per page") @RequestParam(value = "pageSize", defaultValue = "25", required = false) int pageSize,
+            @Parameter(description = "Only return posts containing this string") @RequestParam(value = "titleSubstring", defaultValue = "", required = false) String titleSubstring
     ) {
-        Page<Post> postPage = postService.getPostPageWithAuthor(pageNumber, Math.min(pageSize, 100), contains);
+        Page<PostExplore> postPage = postService.getPostExplorePage(pageNumber, Math.min(pageSize, 100), titleSubstring);
 
         PostPage<PostExplore> result = new PostPage<>
-                (postPage.getContent().stream()
-                        .map(post -> new PostExplore(post.getTitle(), post.getId(), post.getCreatedAt(), post.getAuthor().getEmail())).toList(),
+                (postPage.getContent(),
                         postPage.getNumber(),
                         postPage.getSize(),
                         postPage.getTotalElements(),
@@ -62,6 +64,5 @@ public class PostController {
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
-
 }
 

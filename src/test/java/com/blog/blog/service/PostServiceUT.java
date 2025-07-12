@@ -2,9 +2,12 @@ package com.blog.blog.service;
 
 import com.blog.blog.dto.PostCreate;
 import com.blog.blog.dto.PostCreated;
+import com.blog.blog.dto.PostFull;
 import com.blog.blog.entities.Post;
 import com.blog.blog.entities.User;
+import com.blog.blog.exceptions.PostNotFoundException;
 import com.blog.blog.exceptions.UserNotExistingException;
+import com.blog.blog.repository.PostRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -21,15 +24,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.parameters.P;
 import org.springframework.validation.beanvalidation.CustomValidatorBean;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.time.Instant;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -45,6 +45,9 @@ public class PostServiceUT {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private PostRepository postRepository;
 
     @InjectMocks
     private PostService postService;
@@ -105,5 +108,31 @@ public class PostServiceUT {
         assertThrows(UserNotExistingException.class, () -> postService.addPost(userInput, postCreate));
     }
 
+    @Test
+    public void PostService_getPost_AllGood_ReturnPostFull() {
+        UUID postId = UUID.randomUUID();
+        PostFull expected = new PostFull(
+                "sometitle",
+                "some body",
+                postId,
+                "author@mail.com",
+                Date.from(Instant.now()),
+                Date.from(Instant.now()),
+                100L
+        );
 
+        when(postRepository.findPostWithNumOfLikes(postId)).thenReturn(Optional.of(expected));
+
+        PostFull result = postService.getPost(postId);
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void PostService_getPost_PostNotExisting_PostNotFoundException() {
+        UUID postId = UUID.randomUUID();
+        when(postRepository.findPostWithNumOfLikes(postId)).thenReturn(Optional.empty());
+
+        assertThrows(PostNotFoundException.class, () -> postService.getPost(postId));
+    }
 }

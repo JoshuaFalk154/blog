@@ -7,5 +7,5 @@ import org.springframework.lang.NonNull;
 import java.util.Date;
 import java.util.UUID;
 
-public record PostExplore(@NotBlank String title, @NonNull UUID id, @NonNull Date createdAt, @Email String authorEmail) {
+public record PostExplore(@NotBlank String title, @NonNull UUID id, @NonNull Date createdAt, @Email String authorEmail, long numberOfLikes) {
 }
