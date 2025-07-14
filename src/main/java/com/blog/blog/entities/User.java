@@ -69,13 +69,11 @@ public class User {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return id == user.id;
+        return Objects.equals(id, user.id);
     }
 
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
     }
-
-
 }

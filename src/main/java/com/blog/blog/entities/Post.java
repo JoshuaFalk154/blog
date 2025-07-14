@@ -66,5 +66,6 @@ public class Post {
 
     public void remove() {
         author.removePost(this);
+        likes.forEach(like -> like.setPost(null));
     }
 }

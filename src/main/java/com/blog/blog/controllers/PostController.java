@@ -64,5 +64,22 @@ public class PostController {
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
+
+
+    @Operation(summary = "Delete a post by its ID ",
+            description = "Deletion is only possible, if the authenticated user owns the post"
+    )
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<String> getPostPage(
+            @PathVariable("postId") UUID postId,
+            @AuthenticationPrincipal User user
+    ) {
+
+        postService.deletePost(postId, user);
+
+        return new ResponseEntity<>(String.format("Post with id %s deleted", postId), HttpStatus.OK);
+    }
+
+    // TODO get all posts of a user
 }
 

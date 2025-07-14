@@ -7,6 +7,7 @@ import com.blog.blog.dto.PostCreate;
 import com.blog.blog.entities.User;
 import com.blog.blog.exceptions.PostNotFoundException;
 import com.blog.blog.exceptions.UserNotExistingException;
+import com.blog.blog.exceptions.UserNotOwnerException;
 import com.blog.blog.repository.PostRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -97,6 +98,27 @@ public class PostService {
 
         Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
         return postRepository.findAllWithAuthorAndNumOfLikes(titlePattern, pageable);
+    }
+
+    /**
+     * Deletes a post
+     * @param postId ID of the post
+     * @param user The user who is supposed to own the post
+     * @throws PostNotFoundException If a post with postId doesn't exist
+     * @throws UserNotOwnerException If the user is not the owner of the post
+     */
+    @Transactional
+    public void deletePost(UUID postId, User user) {
+        Post post = postRepository.findPostByIdWithAuthor(postId)
+                .orElseThrow(() -> new PostNotFoundException(String.format("Post with id %s does not exist", postId)));
+
+        if (!post.getAuthor().equals(user)) {
+            throw new UserNotOwnerException(String.format("User with email %s is not owner of post with id %s", user.getEmail(), postId));
+        }
+
+        post.getLikes();
+        post.remove();
+        postRepository.deleteById(postId);
     }
 
 }
