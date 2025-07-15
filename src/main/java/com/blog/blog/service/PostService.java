@@ -5,6 +5,7 @@ import com.blog.blog.dto.PostFull;
 import com.blog.blog.entities.Post;
 import com.blog.blog.dto.PostCreate;
 import com.blog.blog.entities.User;
+import com.blog.blog.exceptions.InvalidPaginationException;
 import com.blog.blog.exceptions.PostNotFoundException;
 import com.blog.blog.exceptions.UserNotExistingException;
 import com.blog.blog.exceptions.UserNotOwnerException;
@@ -66,34 +67,46 @@ public class PostService {
     }
 
     /**
-     * Returns post by id
+     * Returns PostFull by ID
      * @param postId ID of the post
-     * @return Post with id=postId
-     * @throws PostNotFoundException If the post with id postId does not exist
+     * @return PostFull with postId as ID
+     * @throws PostNotFoundException If a post with id postId does not exist
      */
     @Transactional
-    public PostFull getPost(UUID postId) {
+    public PostFull getPostFull(UUID postId) {
         return postRepository.findPostWithNumOfLikes(postId)
                 .orElseThrow(() -> new PostNotFoundException(String.format("Post with id %s not found", postId)));
     }
 
     /**
+     * Returns post by ID
+     * @param postId ID of the post
+     * @return Post with postId as ID
+     * @throws PostNotFoundException If the post with ID postId does not exist
+     */
+    @Transactional
+    public Post getPost(UUID postId) {
+        return postRepository.findPostById(postId)
+                .orElseThrow(() -> new PostNotFoundException(String.format("Post with id %s not found", postId)));
+    }
+
+
+    /**
      * Returns a Page of PostExplore objects.
-     *
-     * @param pageNumber   The number of the page
-     * @param pageSize     The number of posts in the page
+     * @param pageNumber   The number of the page - Starting from 1
+     * @param pageSize     The number of posts in the page - maximum is 100
      * @param titlePattern Filters all posts by the title containing the given pattern
      * @return A page of posts
-     * @throws IllegalArgumentException If pageNumber or pageSize is invalid
+     * @throws InvalidPaginationException If pageNumber is <= 0 or pageSize is out of range
      */
     @Transactional
     public Page<PostExplore> getPostExplorePage(int pageNumber, int pageSize, String titlePattern) {
         if (pageNumber <= 0) {
-            throw new IllegalArgumentException("Page numbers can't be smaller than zero");
+            throw new InvalidPaginationException("Page numbers can't be smaller than zero");
         }
 
-        if (pageSize > 100) {
-            throw new IllegalArgumentException("A page can't have more than 100 elements");
+        if (pageSize <= 0 || pageSize > 100) {
+            throw new InvalidPaginationException("A page can't have more than 100 elements and less than 1");
         }
 
         Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);

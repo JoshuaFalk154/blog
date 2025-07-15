@@ -16,6 +16,8 @@ import java.util.UUID;
 public interface PostRepository extends JpaRepository<Post, UUID> {
     Optional<Post> findByAuthor(User user);
 
+    Optional<Post> findPostById(UUID id);
+
     @Query(value = "SELECT p, a FROM Post p JOIN p.author a WHERE p.id = ?1")
     Optional<Post> findPostByIdWithAuthor(UUID id);
 

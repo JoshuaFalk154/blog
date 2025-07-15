@@ -37,7 +37,7 @@ public class PostController {
     @Operation(summary = "Return a post by ID", description = "Returns a post by its ID. It also contains the author's email as well as the number of likes")
     @GetMapping("/{postId}")
     public ResponseEntity<PostFull> getPost(@AuthenticationPrincipal User user, @PathVariable UUID postId) {
-        PostFull postFull = postService.getPost(postId);
+        PostFull postFull = postService.getPostFull(postId);
 
         return new ResponseEntity<>(postFull, HttpStatus.OK);
     }

@@ -1,28 +1,26 @@
 package com.blog.blog.service;
 
 import com.blog.blog.dto.PostCreate;
-import com.blog.blog.dto.PostCreated;
 import com.blog.blog.dto.PostFull;
 import com.blog.blog.entities.Post;
 import com.blog.blog.entities.User;
+import com.blog.blog.exceptions.InvalidPaginationException;
 import com.blog.blog.exceptions.PostNotFoundException;
 import com.blog.blog.exceptions.UserNotExistingException;
 import com.blog.blog.repository.PostRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
-import org.hibernate.validator.internal.engine.ConstraintViolationImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.parameters.P;
-import org.springframework.validation.beanvalidation.CustomValidatorBean;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.Instant;
 import java.util.*;
@@ -30,8 +28,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceUT {
@@ -89,7 +86,7 @@ public class PostServiceUT {
 
     private static Stream<Arguments> provideInvalidPostCreates() {
         return Stream.of(
-          Arguments.of(new PostCreate("", "Some body")),
+                Arguments.of(new PostCreate("", "Some body")),
                 Arguments.of(new PostCreate("Some Title", ""))
         );
     }
@@ -109,7 +106,7 @@ public class PostServiceUT {
     }
 
     @Test
-    public void PostService_getPost_AllGood_ReturnPostFull() {
+    public void PostService_getPostFull_AllGood_ReturnPostFullFull() {
         UUID postId = UUID.randomUUID();
         PostFull expected = new PostFull(
                 "sometitle",
@@ -123,16 +120,116 @@ public class PostServiceUT {
 
         when(postRepository.findPostWithNumOfLikes(postId)).thenReturn(Optional.of(expected));
 
-        PostFull result = postService.getPost(postId);
+        PostFull result = postService.getPostFull(postId);
 
         assertEquals(expected, result);
     }
 
     @Test
-    public void PostService_getPost_PostNotExisting_PostNotFoundException() {
+    public void PostService_getPostFull_PostNotExisting_PostFullNotFoundException() {
         UUID postId = UUID.randomUUID();
         when(postRepository.findPostWithNumOfLikes(postId)).thenReturn(Optional.empty());
 
-        assertThrows(PostNotFoundException.class, () -> postService.getPost(postId));
+        assertThrows(PostNotFoundException.class, () -> postService.getPostFull(postId));
     }
+
+    @Test
+    public void PostService_getPost_AllGood_ReturnPostFullFull() {
+        UUID postId = UUID.randomUUID();
+
+        Post expected = Post.builder()
+                .id(postId)
+                .title("some title")
+                .body("some body")
+                .build();
+
+        when(postRepository.findPostById(postId)).thenReturn(Optional.of(expected));
+        Post result = postService.getPost(postId);
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void PostService_getPost_PostNotExisting_PostFullNotFoundException() {
+        UUID postId = UUID.randomUUID();
+        when(postRepository.findPostWithNumOfLikes(postId)).thenReturn(Optional.empty());
+
+        assertThrows(PostNotFoundException.class, () -> postService.getPostFull(postId));
+    }
+
+    @Test
+    public void PostService_deletePost_AllGood() {
+        UUID postId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        User user = User.builder()
+                .id(userId)
+                .email("email")
+                .build();
+
+        Post expected = Post.builder()
+                .id(postId)
+                .title("some title")
+                .body("some body")
+                .author(user)
+                .build();
+
+        when(postRepository.findPostByIdWithAuthor(postId)).thenReturn(Optional.of(expected));
+        postService.deletePost(postId, user);
+    }
+
+    @Test
+    public void PostService_deletePost_PostNotExisting_PostNotFoundException() {
+        UUID postId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        User user = User.builder()
+                .id(userId)
+                .email("email")
+                .build();
+
+        when(postRepository.findPostByIdWithAuthor(postId)).thenReturn(Optional.empty());
+        assertThrows(PostNotFoundException.class, () -> postService.deletePost(postId, user));
+    }
+
+    @Test
+    public void PostService_deletePost_UserNotOwner_UserNotOwnerException() {
+        UUID postId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
+
+        User user = User.builder()
+                .id(userId)
+                .email("email")
+                .build();
+
+        User owner = User.builder()
+                .id(ownerId)
+                .email("email")
+                .build();
+
+        Post expected = Post.builder()
+                .id(postId)
+                .title("some title")
+                .body("some body")
+                .author(user)
+                .build();
+
+        when(postRepository.findPostByIdWithAuthor(postId)).thenReturn(Optional.of(expected));
+        postService.deletePost(postId, user);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "-1, 50",
+            "2, 101",
+            "-2, -101",
+            "4, 0",
+            "0, 100"
+    })
+    void PostService_getPostExplorePage_InvalidPageNumber_InvalidPaginationException(int pageNumber, int pageSize) {
+        assertThrows(InvalidPaginationException.class, () -> postService.getPostExplorePage(pageNumber, pageSize, ""));
+    }
+
+
 }
