@@ -7,6 +7,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Entity
@@ -30,11 +31,11 @@ public class User {
 
     @Column
     @CreationTimestamp
-    private Date createdAt;
+    private LocalDate createdAt;
 
     @Column
     @UpdateTimestamp
-    private Date updatedAt;
+    private LocalDate updatedAt;
 
     @Builder.Default
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)

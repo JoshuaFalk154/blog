@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -113,8 +114,8 @@ public class PostServiceUT {
                 "some body",
                 postId,
                 "author@mail.com",
-                Date.from(Instant.now()),
-                Date.from(Instant.now()),
+                LocalDate.from(LocalDate.now()),
+                LocalDate.from(LocalDate.now()),
                 100L
         );
 

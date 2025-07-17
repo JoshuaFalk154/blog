@@ -29,10 +29,9 @@ public class PostController {
     @PostMapping
     public ResponseEntity<PostCreated> addPost(@AuthenticationPrincipal User user, @Valid @RequestBody PostCreate postCreate) {
         Post post = postService.addPost(user, postCreate);
-        //PostCreated postCreated = new PostCreated(post.getTitle(), post.getId(), post.getCreatedAt(), post.getAuthor().getEmail());
+        PostCreated postCreated = new PostCreated(post.getTitle(), post.getId(), post.getCreatedAt(), post.getAuthor().getEmail());
 
-        //return new ResponseEntity<>(postCreated, HttpStatus.CREATED);
-        return null;
+        return new ResponseEntity<>(postCreated, HttpStatus.CREATED);
     }
 
     @Operation(summary = "Return a post by ID", description = "Returns a post by its ID. It also contains the author's email as well as the number of likes")

@@ -113,11 +113,11 @@ public class PostServiceIT {
         post = postRepository.save(post);
 
 
-        //PostFull expected = new PostFull(post.getTitle(), post.getBody(), post.getId(), user.getEmail(), post.getCreatedAt(), post.getUpdatedAt(), 1L);
+        PostFull expected = new PostFull(post.getTitle(), post.getBody(), post.getId(), user.getEmail(), post.getCreatedAt(), post.getUpdatedAt(), 1L);
 
         PostFull result = postService.getPostFull(post.getId());
 
-        //assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
 
@@ -175,12 +175,7 @@ public class PostServiceIT {
                 .build();
 
         post1.addLike(like1);
-        post1 = postRepository.save(post1);
-        post2 = postRepository.save(post2);
-        post3 = postRepository.save(post3);
-
-
-        //postRepository.saveAll(List.of(post1, post2, post3));
+        postRepository.saveAll(List.of(post1, post2, post3));
 
         List<PostExplore> postExplores = new ArrayList<>(List.of(
            new PostExplore(post1.getTitle(), post1.getId(), post1.getCreatedAt(), post1.getAuthor().getEmail(), 1L),
@@ -191,26 +186,8 @@ public class PostServiceIT {
 
         Page<PostExplore> result = postService.getPostExplorePage(1, 5, "");
 
-        List<PostExplore> listExpected = expected.getContent().stream()
-                .sorted()
-                //.map(postExplore -> new PostExplore(postExplore.title(), postExplore.id(), null, postExplore.authorEmail(), postExplore.numberOfLikes()))
-                .toList();
-
-        List<PostExplore> listResult = result.getContent().stream()
-                .sorted()
-                //.map(postExplore -> new PostExplore(postExplore.title(), postExplore.id(), null, postExplore.authorEmail(), postExplore.numberOfLikes()))
-                .toList();
-
-        if (listExpected.get(0).createdAt().equals(listResult.get(0).createdAt())) {
-
-        }
-
-        assertTrue(listExpected.size() == listResult.size() &&
-                listExpected.containsAll(listResult) && listResult.containsAll(listExpected));
-
-
-//        assertTrue(expected.getContent().size() == result.getContent().size() &&
-//                expected.getContent().containsAll(result.getContent()) && result.getContent().containsAll(expected.getContent()));
+        assertTrue(expected.getContent().size() == result.getContent().size() &&
+                expected.getContent().containsAll(result.getContent()) && result.getContent().containsAll(expected.getContent()));
 
     }
 
