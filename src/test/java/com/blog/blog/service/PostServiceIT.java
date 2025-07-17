@@ -14,6 +14,9 @@ import com.blog.blog.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +29,7 @@ import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,7 +54,7 @@ public class PostServiceIT {
     @Autowired
     LikeRepository likeRepository;
 
-    User user;
+    static User user;
 
     @BeforeEach
     void beforeEach() {
@@ -121,7 +125,6 @@ public class PostServiceIT {
     }
 
 
-
     @Test
     void PostService_deletePage() {
         Post post = Post.builder()
@@ -145,8 +148,104 @@ public class PostServiceIT {
         assertThat(postOptional).isEmpty();
     }
 
+
     @Test
-    void PostService_getPostExplorePage() {
+    void PostService_getPostExplorePage_RightList1() {
+        List<Post> posts = loadPosts();
+        Post post1 = posts.get(0);
+        Post post2 = posts.get(1);
+        Post post3 = posts.get(2);
+
+        List<PostExplore> expectedList = new ArrayList<>(List.of(
+                new PostExplore(post1.getTitle(), post1.getId(), post1.getCreatedAt(), post1.getAuthor().getEmail(), 1L),
+                new PostExplore(post2.getTitle(), post2.getId(), post2.getCreatedAt(), post2.getAuthor().getEmail(), 0L),
+                new PostExplore(post3.getTitle(), post3.getId(), post3.getCreatedAt(), post3.getAuthor().getEmail(), 0L)
+        ));
+
+        Page<PostExplore> result = postService.getPostExplorePage(1, 5, "");
+
+        assertTrue(expectedList.size() == result.getContent().size() &&
+                expectedList.containsAll(result.getContent()) && result.getContent().containsAll(expectedList));
+    }
+
+    @Test
+    void PostService_getPostExplorePage_RightList2() {
+        List<Post> posts = loadPosts();
+        Post post1 = posts.get(0);
+        Post post2 = posts.get(1);
+        Post post3 = posts.get(2);
+
+        List<PostExplore> expectedList = new ArrayList<>(List.of(
+                new PostExplore(post1.getTitle(), post1.getId(), post1.getCreatedAt(), post1.getAuthor().getEmail(), 1L)
+        ));
+
+        Page<PostExplore> result = postService.getPostExplorePage(1, 5, "1");
+
+        assertTrue(expectedList.size() == result.getContent().size() &&
+                expectedList.containsAll(result.getContent()) && result.getContent().containsAll(expectedList));
+    }
+
+    @Test
+    void PostService_getPostExplorePage_RightList3() {
+        List<Post> posts = loadPosts();
+        Post post1 = posts.get(0);
+        Post post2 = posts.get(1);
+        Post post3 = posts.get(2);
+
+        List<PostExplore> expectedList = new ArrayList<>(List.of(
+                new PostExplore(post1.getTitle(), post1.getId(), post1.getCreatedAt(), post1.getAuthor().getEmail(), 1L),
+                new PostExplore(post2.getTitle(), post2.getId(), post2.getCreatedAt(), post2.getAuthor().getEmail(), 0L),
+                new PostExplore(post3.getTitle(), post3.getId(), post3.getCreatedAt(), post3.getAuthor().getEmail(), 0L)
+        ));
+
+        Page<PostExplore> result = postService.getPostExplorePage(1, 5, "t");
+
+        assertTrue(expectedList.size() == result.getContent().size() &&
+                expectedList.containsAll(result.getContent()) && result.getContent().containsAll(expectedList));
+    }
+
+
+
+    List<Post> loadPosts() {
+        User user2 = User.builder()
+                .sub("user2sub")
+                .email("user2@mail.com")
+                .build();
+        userRepository.save(user2);
+
+        Post post1 = Post.builder()
+                .title("post1title")
+                .body("post1body")
+                .author(user)
+                .build();
+        Post post2 = Post.builder()
+                .title("post2title")
+                .body("post2body")
+                .author(user)
+                .build();
+        Post post3 = Post.builder()
+                .title("post3title")
+                .body("post3body")
+                .author(user2)
+                .build();
+
+        Like like1 = Like.builder()
+                .post(post1)
+                .user(user2)
+                .build();
+
+        post1.addLike(like1);
+
+        List<Post> result = new ArrayList<>(List.of(post1, post2, post3));
+
+        postRepository.saveAll(result);
+
+        return result;
+    }
+
+
+    @Test
+    void PostService_getPostExplorePage_RightSize1() {
         User user2 = User.builder()
                 .sub("user2sub")
                 .email("user2@mail.com")
@@ -177,18 +276,45 @@ public class PostServiceIT {
         post1.addLike(like1);
         postRepository.saveAll(List.of(post1, post2, post3));
 
-        List<PostExplore> postExplores = new ArrayList<>(List.of(
-           new PostExplore(post1.getTitle(), post1.getId(), post1.getCreatedAt(), post1.getAuthor().getEmail(), 1L),
-                new PostExplore(post2.getTitle(), post2.getId(), post2.getCreatedAt(), post2.getAuthor().getEmail(), 0L),
-                new PostExplore(post3.getTitle(), post3.getId(), post3.getCreatedAt(), post3.getAuthor().getEmail(), 0L)
-        ));
-        Page<PostExplore> expected = new PageImpl<PostExplore>(postExplores);
+        Page<PostExplore> result = postService.getPostExplorePage(1, 2, "");
 
-        Page<PostExplore> result = postService.getPostExplorePage(1, 5, "");
-
-        assertTrue(expected.getContent().size() == result.getContent().size() &&
-                expected.getContent().containsAll(result.getContent()) && result.getContent().containsAll(expected.getContent()));
-
+        assertEquals(2, result.getContent().size());
     }
 
+    @Test
+    void PostService_getPostExplorePage_RightSize2() {
+        User user2 = User.builder()
+                .sub("user2sub")
+                .email("user2@mail.com")
+                .build();
+        userRepository.save(user2);
+
+        Post post1 = Post.builder()
+                .title("post1title")
+                .body("post1body")
+                .author(user)
+                .build();
+        Post post2 = Post.builder()
+                .title("post2title")
+                .body("post2body")
+                .author(user)
+                .build();
+        Post post3 = Post.builder()
+                .title("post3title")
+                .body("post3body")
+                .author(user2)
+                .build();
+
+        Like like1 = Like.builder()
+                .post(post1)
+                .user(user2)
+                .build();
+
+        post1.addLike(like1);
+        postRepository.saveAll(List.of(post1, post2, post3));
+
+        Page<PostExplore> result = postService.getPostExplorePage(2, 2, "");
+
+        assertEquals(1, result.getContent().size());
+    }
 }
