@@ -2,6 +2,7 @@ package com.blog.blog.repository;
 
 import com.blog.blog.dto.PostExplore;
 import com.blog.blog.dto.PostFull;
+
 import com.blog.blog.entities.Post;
 import com.blog.blog.entities.User;
 import org.springframework.data.domain.Page;
@@ -77,4 +78,5 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
                     WHERE p.id = :postId
                     """)
     Optional<PostFull> findPostWithNumOfLikes(@Param("postId") UUID postId);
+
 }

@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Entity
@@ -28,11 +29,11 @@ public class Post {
 
     @Column
     @CreationTimestamp
-    private Date createdAt;
+    private LocalDate createdAt;
 
     @Column
     @UpdateTimestamp
-    private Date updatedAt;
+    private LocalDate updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id")
