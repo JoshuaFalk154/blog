@@ -25,7 +25,7 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     @Query(value = """
             SELECT p
             FROM Post p
-            JOIN FETCH p.author a
+            LEFT JOIN FETCH p.author a
             WHERE p.title LIKE %:titlePattern%
             """,
             countQuery = """
@@ -44,7 +44,7 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
                 COUNT(l.id) as numberOfLikes
             )
             FROM Post p
-            JOIN p.author a
+            LEFT JOIN p.author a
             LEFT JOIN p.likes l
             WHERE p.title LIKE %:titlePattern%
             GROUP BY p.title, p.id, p.createdAt, a.email
@@ -67,7 +67,7 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
                 COUNT(l.id) as numberOfLikes
             )
             FROM Post p
-            JOIN p.author a
+            LEFT JOIN p.author a
             LEFT JOIN p.likes l
             WHERE p.id = :postId
             GROUP BY p.title, p.id, p.createdAt, a.email

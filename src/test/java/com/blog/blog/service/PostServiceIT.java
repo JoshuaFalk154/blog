@@ -94,7 +94,6 @@ public class PostServiceIT {
                 .author(user)
                 .build();
         postRepository.save(expected);
-        postRepository.flush();
 
         Post result = postService.getPost(expected.getId());
 
@@ -172,8 +171,6 @@ public class PostServiceIT {
     void PostService_getPostExplorePage_RightList2() {
         List<Post> posts = loadPosts();
         Post post1 = posts.get(0);
-        Post post2 = posts.get(1);
-        Post post3 = posts.get(2);
 
         List<PostExplore> expectedList = new ArrayList<>(List.of(
                 new PostExplore(post1.getTitle(), post1.getId(), post1.getCreatedAt(), post1.getAuthor().getEmail(), 1L)
@@ -203,8 +200,6 @@ public class PostServiceIT {
         assertTrue(expectedList.size() == result.getContent().size() &&
                 expectedList.containsAll(result.getContent()) && result.getContent().containsAll(expectedList));
     }
-
-
 
     List<Post> loadPosts() {
         User user2 = User.builder()
@@ -246,36 +241,7 @@ public class PostServiceIT {
 
     @Test
     void PostService_getPostExplorePage_RightSize1() {
-        User user2 = User.builder()
-                .sub("user2sub")
-                .email("user2@mail.com")
-                .build();
-        userRepository.save(user2);
-
-        Post post1 = Post.builder()
-                .title("post1title")
-                .body("post1body")
-                .author(user)
-                .build();
-        Post post2 = Post.builder()
-                .title("post2title")
-                .body("post2body")
-                .author(user)
-                .build();
-        Post post3 = Post.builder()
-                .title("post3title")
-                .body("post3body")
-                .author(user2)
-                .build();
-
-        Like like1 = Like.builder()
-                .post(post1)
-                .user(user2)
-                .build();
-
-        post1.addLike(like1);
-        postRepository.saveAll(List.of(post1, post2, post3));
-
+        loadPosts();
         Page<PostExplore> result = postService.getPostExplorePage(1, 2, "");
 
         assertEquals(2, result.getContent().size());
@@ -283,35 +249,7 @@ public class PostServiceIT {
 
     @Test
     void PostService_getPostExplorePage_RightSize2() {
-        User user2 = User.builder()
-                .sub("user2sub")
-                .email("user2@mail.com")
-                .build();
-        userRepository.save(user2);
-
-        Post post1 = Post.builder()
-                .title("post1title")
-                .body("post1body")
-                .author(user)
-                .build();
-        Post post2 = Post.builder()
-                .title("post2title")
-                .body("post2body")
-                .author(user)
-                .build();
-        Post post3 = Post.builder()
-                .title("post3title")
-                .body("post3body")
-                .author(user2)
-                .build();
-
-        Like like1 = Like.builder()
-                .post(post1)
-                .user(user2)
-                .build();
-
-        post1.addLike(like1);
-        postRepository.saveAll(List.of(post1, post2, post3));
+        loadPosts();
 
         Page<PostExplore> result = postService.getPostExplorePage(2, 2, "");
 
