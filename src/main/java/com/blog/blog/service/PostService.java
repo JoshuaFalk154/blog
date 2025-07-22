@@ -6,10 +6,7 @@ import com.blog.blog.dto.PostUpdate;
 import com.blog.blog.entities.Post;
 import com.blog.blog.dto.PostCreate;
 import com.blog.blog.entities.User;
-import com.blog.blog.exceptions.InvalidPaginationException;
-import com.blog.blog.exceptions.PostNotFoundException;
-import com.blog.blog.exceptions.UserNotExistingException;
-import com.blog.blog.exceptions.UserNotOwnerException;
+import com.blog.blog.exceptions.*;
 import com.blog.blog.repository.PostRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -42,7 +39,7 @@ public class PostService {
      * @param user       User to whom to add the post.
      * @param postCreate Post to be added.
      * @return Post after added to database.
-     * @throws IllegalArgumentException If Post has invalid values.
+     * @throws PostIllegalArgumentException If Post has invalid values.
      * @throws UserNotExistingException If User does not exist.
      */
     @Transactional
@@ -50,7 +47,7 @@ public class PostService {
         Set<ConstraintViolation<PostCreate>> violations = validator.validate(postCreate);
 
         if (!violations.isEmpty()) {
-            throw new IllegalArgumentException("Illegal arguments for post");
+            throw new PostIllegalArgumentException("Illegal arguments for post");
         }
 
         if (!userService.userExists(user.getSub())) {
@@ -135,7 +132,6 @@ public class PostService {
             throw new UserNotOwnerException(String.format("User with email %s is not owner of post with id %s", user.getEmail(), postId));
         }
 
-        post.getLikes();
         post.remove();
         postRepository.deleteById(postId);
     }

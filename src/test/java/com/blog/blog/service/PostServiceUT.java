@@ -5,10 +5,7 @@ import com.blog.blog.dto.PostFull;
 import com.blog.blog.dto.PostUpdate;
 import com.blog.blog.entities.Post;
 import com.blog.blog.entities.User;
-import com.blog.blog.exceptions.InvalidPaginationException;
-import com.blog.blog.exceptions.PostNotFoundException;
-import com.blog.blog.exceptions.UserNotExistingException;
-import com.blog.blog.exceptions.UserNotOwnerException;
+import com.blog.blog.exceptions.*;
 import com.blog.blog.repository.PostRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.ConstraintViolation;
@@ -84,7 +81,7 @@ public class PostServiceUT {
         ConstraintViolation<PostCreate> mockViolation = mock(ConstraintViolation.class);
         when(validator.validate(postCreate)).thenReturn(new HashSet<>(Set.of(mockViolation)));
 
-        assertThrows(IllegalArgumentException.class, () -> postService.addPost(userInput, postCreate));
+        assertThrows(PostIllegalArgumentException.class, () -> postService.addPost(userInput, postCreate));
     }
 
     private static Stream<Arguments> provideInvalidPostCreates() {
