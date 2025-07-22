@@ -9,11 +9,13 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Service
@@ -30,13 +32,43 @@ public class JwtConverter implements Converter<Jwt, AbstractAuthenticationToken>
     @Value("${jwt.auth.converter.username}")
     private String username;
 
+    @Value("${jwt.auth.converter.client-roles}")
+    private String clientRoles;
+
     @Override
     public AbstractAuthenticationToken convert(@NonNull Jwt source) {
         UserLoad userLoad = new UserLoad(source.getClaim(username), source.getClaim(principleAttribute));
         User user = userService.loadUser(userLoad);
 
-        List<GrantedAuthority> authorities = jwtGrantedAuthoritiesConverter.convert(source).stream().toList();
+        List<GrantedAuthority> authorities = Stream.concat(
+                jwtGrantedAuthoritiesConverter.convert(source).stream(),
+                extractResourceRoles(source).stream()
+        ).toList();
 
         return new MyAuthenticationToken(source, user, authorities);
+    }
+
+    private Collection<? extends GrantedAuthority> extractResourceRoles(Jwt jwt) {
+        Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
+
+        if (resourceAccess == null) {
+            return Set.of();
+        }
+
+        Map<String, Object> clientRolesMap = (Map<String, Object>) resourceAccess.get(clientRoles);
+
+        if (clientRolesMap == null) {
+            return Set.of();
+        }
+
+        List<String> roleStrings = (List<String>) clientRolesMap.get("roles");
+
+        if (roleStrings == null) {
+            return Set.of();
+        }
+
+        return roleStrings.stream()
+                .map(roleString -> new SimpleGrantedAuthority("ROLE_" + roleString.toUpperCase()))
+                .toList();
     }
 }
