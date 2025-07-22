@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.domain.Persistable;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -15,10 +16,10 @@ import java.util.*;
 @Getter
 @Setter
 @Table(name = "posts")
-public class Post {
+public class Post  {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    //@GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @Column()
@@ -68,5 +69,12 @@ public class Post {
     public void remove() {
         author.removePost(this);
         likes.forEach(like -> like.setPost(null));
+    }
+
+    @PrePersist
+    public void generateId() {
+        if (id == null) {
+            this.id = UUID.randomUUID();
+        }
     }
 }

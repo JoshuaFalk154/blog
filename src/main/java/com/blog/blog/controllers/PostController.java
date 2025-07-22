@@ -66,7 +66,7 @@ public class PostController {
     }
 
 
-    @Operation(summary = "Delete a post by its ID ",
+    @Operation(summary = "Delete a post by its ID",
             description = "Deletion is only possible, if the authenticated user owns the post"
     )
     @DeleteMapping("/{postId}")
@@ -80,6 +80,14 @@ public class PostController {
         return new ResponseEntity<>(String.format("Post with id %s deleted", postId), HttpStatus.OK);
     }
 
-    // TODO get all posts of a user
+    @Operation(summary = "Put a post by its ID",
+            description = "Updates existing post or creates a new post if post with ID does not exist")
+    @PutMapping("/{postId}")
+    public ResponseEntity<String> updatePost(@PathVariable("postId") UUID postId, @RequestBody PostUpdate postUpdate, @AuthenticationPrincipal User user) {
+        Post post = postService.updatePost(postId, postUpdate, user);
+
+        return new ResponseEntity<>("Post updated", HttpStatus.OK);
+    }
+
 }
 

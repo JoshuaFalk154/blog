@@ -5,6 +5,7 @@ import com.blog.blog.dto.PostCreate;
 import com.blog.blog.dto.PostExplore;
 import com.blog.blog.dto.PostFull;
 
+import com.blog.blog.dto.PostUpdate;
 import com.blog.blog.entities.Like;
 import com.blog.blog.entities.Post;
 import com.blog.blog.entities.User;
@@ -29,6 +30,7 @@ import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -255,4 +257,36 @@ public class PostServiceIT {
 
         assertEquals(1, result.getContent().size());
     }
+
+    @Test
+    void PostService_updatePost_PostExists_PostUpdated() {
+        Post post = Post.builder()
+                .title("title")
+                .body("body")
+                .author(user)
+                .build();
+
+        PostUpdate postUpdate = new PostUpdate("updatedTitle", "updatedBody");
+
+        postRepository.save(post);
+
+        Post result = postService.updatePost(post.getId(), postUpdate, user);
+
+        assertEquals(result.getTitle(), postUpdate.title());
+        assertEquals(result.getBody(), postUpdate.body());
+    }
+
+    @Test
+    void PostService_updatePost_PostNotExists_PostCreated() {
+        PostUpdate postUpdate = new PostUpdate("updatedTitle", "updatedBody");
+        UUID postId = UUID.randomUUID();
+
+        Post result = postService.updatePost(postId, postUpdate, user);
+
+        assertEquals(result.getTitle(), postUpdate.title());
+        assertEquals(result.getBody(), postUpdate.body());
+        assertEquals(result.getAuthor(), user);
+    }
+
+
 }

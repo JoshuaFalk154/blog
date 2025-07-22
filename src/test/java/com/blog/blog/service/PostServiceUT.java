@@ -2,11 +2,13 @@ package com.blog.blog.service;
 
 import com.blog.blog.dto.PostCreate;
 import com.blog.blog.dto.PostFull;
+import com.blog.blog.dto.PostUpdate;
 import com.blog.blog.entities.Post;
 import com.blog.blog.entities.User;
 import com.blog.blog.exceptions.InvalidPaginationException;
 import com.blog.blog.exceptions.PostNotFoundException;
 import com.blog.blog.exceptions.UserNotExistingException;
+import com.blog.blog.exceptions.UserNotOwnerException;
 import com.blog.blog.repository.PostRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.ConstraintViolation;
@@ -232,5 +234,66 @@ public class PostServiceUT {
         assertThrows(InvalidPaginationException.class, () -> postService.getPostExplorePage(pageNumber, pageSize, ""));
     }
 
+    @ParameterizedTest
+    @MethodSource("provideInvalidPostUpdates")
+    void PostService_updatePost_InvalidPostUpdate_IllegalArgumentException(PostUpdate postUpdate) {
+        ConstraintViolation<PostUpdate> mockViolation = mock(ConstraintViolation.class);
+        when(validator.validate(postUpdate)).thenReturn(new HashSet<>(Set.of(mockViolation)));
+
+        assertThrows(IllegalArgumentException.class, () -> postService.updatePost(UUID.randomUUID(), postUpdate, null));
+    }
+
+    private static Stream<Arguments> provideInvalidPostUpdates() {
+        return Stream.of(
+                Arguments.of(new PostUpdate("", "Some body")),
+                Arguments.of(new PostUpdate("Some title", "")),
+                Arguments.of(new PostUpdate(" ", "Some body")),
+                Arguments.of(new PostUpdate("", "  ")),
+                Arguments.of(new PostUpdate("    ", "  "))
+        );
+    }
+
+    @Test
+    void PostService_updatePost_UserNotExists_UserNotExistingException() {
+        PostUpdate postUpdate = new PostUpdate("title", "body");
+        User user = User.builder()
+                .sub("somesub")
+                .id(UUID.randomUUID())
+                .email("email@mail.com")
+                .build();
+
+        when(validator.validate(postUpdate)).thenReturn(new HashSet<>(Set.of()));
+        when(userService.userExists(user.getSub())).thenReturn(false);
+
+        assertThrows(UserNotExistingException.class, () -> postService.updatePost(UUID.randomUUID(), postUpdate, user));
+    }
+
+    @Test
+    void PostService_updatePost_PostExistsButUserNotOwner_UserNotOwnerException() {
+        PostUpdate postUpdate = new PostUpdate("title", "body");
+        User user = User.builder()
+                .sub("somesub")
+                .id(UUID.randomUUID())
+                .email("email@mail.com")
+                .build();
+        User owner = User.builder()
+                .sub("ownersub")
+                .id(UUID.randomUUID())
+                .email("owner@mail.com")
+                .build();
+
+        UUID postId = UUID.randomUUID();
+        Post post = Post.builder()
+                .author(owner)
+                .title("title")
+                .body("body")
+                .build();
+
+        when(validator.validate(postUpdate)).thenReturn(new HashSet<>(Set.of()));
+        when(userService.userExists(user.getSub())).thenReturn(true);
+        when(postRepository.findPostByIdWithAuthor(postId)).thenReturn(Optional.of(post));
+
+        assertThrows(UserNotOwnerException.class, () -> postService.updatePost(postId, postUpdate, user));
+    }
 
 }

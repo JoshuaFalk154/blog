@@ -78,5 +78,4 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
                     WHERE p.id = :postId
                     """)
     Optional<PostFull> findPostWithNumOfLikes(@Param("postId") UUID postId);
-
 }

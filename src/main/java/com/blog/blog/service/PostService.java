@@ -2,6 +2,7 @@ package com.blog.blog.service;
 
 import com.blog.blog.dto.PostExplore;
 import com.blog.blog.dto.PostFull;
+import com.blog.blog.dto.PostUpdate;
 import com.blog.blog.entities.Post;
 import com.blog.blog.dto.PostCreate;
 import com.blog.blog.entities.User;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -68,6 +70,7 @@ public class PostService {
 
     /**
      * Returns PostFull by ID
+     *
      * @param postId ID of the post
      * @return PostFull with postId as ID
      * @throws PostNotFoundException If a post with id postId does not exist
@@ -80,6 +83,7 @@ public class PostService {
 
     /**
      * Returns post by ID
+     *
      * @param postId ID of the post
      * @return Post with postId as ID
      * @throws PostNotFoundException If the post with ID postId does not exist
@@ -93,6 +97,7 @@ public class PostService {
 
     /**
      * Returns a Page of PostExplore objects.
+     *
      * @param pageNumber   The number of the page - Starting from 1
      * @param pageSize     The number of posts in the page - maximum is 100
      * @param titlePattern Filters all posts by the title containing the given pattern
@@ -115,8 +120,9 @@ public class PostService {
 
     /**
      * Deletes a post
+     *
      * @param postId ID of the post
-     * @param user The user who is supposed to own the post
+     * @param user   The user who is supposed to own the post
      * @throws PostNotFoundException If a post with postId doesn't exist
      * @throws UserNotOwnerException If the user is not the owner of the post
      */
@@ -133,5 +139,54 @@ public class PostService {
         post.remove();
         postRepository.deleteById(postId);
     }
+
+    /**
+     * Updates a post by its ID. Creates a new post, if a post with postId does not already exist
+     *
+     * @param postId     ID of the post
+     * @param postUpdate Used to update the post
+     * @param user       Owner of the post
+     * @return Updated post
+     * @throws IllegalArgumentException If postUpdate is not valid
+     * @throws UserNotExistingException If user does not exist
+     * @throws UserNotOwnerException    If post exists but user is not the owner
+     */
+    @Transactional
+    public Post updatePost(UUID postId, PostUpdate postUpdate, User user) {
+        Set<ConstraintViolation<PostUpdate>> violations = validator.validate(postUpdate);
+        if (!violations.isEmpty()) {
+            throw new IllegalArgumentException("Illegal arguments for post");
+        }
+
+        if (!userService.userExists(user.getSub())) {
+            throw new UserNotExistingException(String.format("User with sub %s does not exist", user.getSub()));
+        }
+
+        Optional<Post> postOptional = postRepository.findPostByIdWithAuthor(postId);
+        Post post;
+
+        if (postOptional.isPresent()) {
+            post = postOptional.get();
+
+            if (!post.getAuthor().equals(user)) {
+                throw new UserNotOwnerException(String.format("User with email %s does not own post with id %s", user.getEmail(), postId));
+            }
+
+            post.setTitle(postUpdate.title());
+            post.setBody(postUpdate.body());
+        } else {
+            post = Post.builder()
+                    .id(postId)
+                    .author(user)
+                    .title(postUpdate.title())
+                    .body(postUpdate.body())
+                    .build();
+
+            user = entityManager.merge(user);
+            user.addPost(post);
+        }
+        return post;
+    }
+
 
 }
