@@ -1,10 +1,7 @@
 package com.blog.blog.service;
 
-import com.blog.blog.dto.PostExplore;
-import com.blog.blog.dto.PostFull;
-import com.blog.blog.dto.PostUpdate;
+import com.blog.blog.dto.*;
 import com.blog.blog.entities.Post;
-import com.blog.blog.dto.PostCreate;
 import com.blog.blog.entities.User;
 import com.blog.blog.exceptions.*;
 import com.blog.blog.repository.PostRepository;
@@ -136,19 +133,57 @@ public class PostService {
         postRepository.deleteById(postId);
     }
 
+
+//    @Transactional
+//    public Post updatePost(UUID postId, PostUpdate postUpdate, User user) {
+//        Set<ConstraintViolation<PostUpdate>> violations = validator.validate(postUpdate);
+//        if (!violations.isEmpty()) {
+//            throw new IllegalArgumentException("Illegal arguments for post");
+//        }
+//
+//        if (!userService.userExists(user.getSub())) {
+//            throw new UserNotExistingException(String.format("User with sub %s does not exist", user.getSub()));
+//        }
+//
+//        Optional<Post> postOptional = postRepository.findPostByIdWithAuthor(postId);
+//        Post post;
+//
+//        if (postOptional.isPresent()) {
+//            post = postOptional.get();
+//
+//            if (!post.getAuthor().equals(user)) {
+//                throw new UserNotOwnerException(String.format("User with email %s does not own post with id %s", user.getEmail(), postId));
+//            }
+//
+//            post.setTitle(postUpdate.title());
+//            post.setBody(postUpdate.body());
+//        } else {
+//            post = Post.builder()
+//                    .id(postId)
+//                    .author(user)
+//                    .title(postUpdate.title())
+//                    .body(postUpdate.body())
+//                    .build();
+//
+//            user = entityManager.merge(user);
+//            user.addPost(post);
+//        }
+//        return post;
+//    }
+
     /**
      * Updates a post by its ID. Creates a new post, if a post with postId does not already exist
      *
      * @param postId     ID of the post
      * @param postUpdate Used to update the post
      * @param user       Owner of the post
-     * @return Updated post
+     * @return Post and status CREATED or UPDATED
      * @throws IllegalArgumentException If postUpdate is not valid
      * @throws UserNotExistingException If user does not exist
      * @throws UserNotOwnerException    If post exists but user is not the owner
      */
     @Transactional
-    public Post updatePost(UUID postId, PostUpdate postUpdate, User user) {
+    public PostPut updatePost(UUID postId, PostUpdate postUpdate, User user) {
         Set<ConstraintViolation<PostUpdate>> violations = validator.validate(postUpdate);
         if (!violations.isEmpty()) {
             throw new IllegalArgumentException("Illegal arguments for post");
@@ -170,6 +205,8 @@ public class PostService {
 
             post.setTitle(postUpdate.title());
             post.setBody(postUpdate.body());
+
+            return new PostPut(post, PutResponse.UPDATED);
         } else {
             post = Post.builder()
                     .id(postId)
@@ -180,8 +217,9 @@ public class PostService {
 
             user = entityManager.merge(user);
             user.addPost(post);
+            return new PostPut(post, PutResponse.CREATED);
         }
-        return post;
+
     }
 
 

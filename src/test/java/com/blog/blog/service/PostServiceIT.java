@@ -270,7 +270,7 @@ public class PostServiceIT {
 
         postRepository.save(post);
 
-        Post result = postService.updatePost(post.getId(), postUpdate, user);
+        Post result = postService.updatePost(post.getId(), postUpdate, user).post();
 
         assertEquals(result.getTitle(), postUpdate.title());
         assertEquals(result.getBody(), postUpdate.body());
@@ -281,7 +281,7 @@ public class PostServiceIT {
         PostUpdate postUpdate = new PostUpdate("updatedTitle", "updatedBody");
         UUID postId = UUID.randomUUID();
 
-        Post result = postService.updatePost(postId, postUpdate, user);
+        Post result = postService.updatePost(postId, postUpdate, user).post();
 
         assertEquals(result.getTitle(), postUpdate.title());
         assertEquals(result.getBody(), postUpdate.body());

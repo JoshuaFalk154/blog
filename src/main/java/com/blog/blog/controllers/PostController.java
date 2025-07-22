@@ -84,9 +84,12 @@ public class PostController {
             description = "Updates existing post or creates a new post if post with ID does not exist")
     @PutMapping("/{postId}")
     public ResponseEntity<String> updatePost(@PathVariable("postId") UUID postId, @RequestBody PostUpdate postUpdate, @AuthenticationPrincipal User user) {
-        Post post = postService.updatePost(postId, postUpdate, user);
+        return switch (postService.updatePost(postId, postUpdate, user).putResponse()) {
+            case CREATED -> new ResponseEntity<>("Post created", HttpStatus.CREATED);
+            case UPDATED -> new ResponseEntity<>("Post updated", HttpStatus.OK);
+        };
 
-        return new ResponseEntity<>("Post updated", HttpStatus.OK);
+
     }
 
 }
