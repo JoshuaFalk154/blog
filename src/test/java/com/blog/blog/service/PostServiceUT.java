@@ -165,6 +165,7 @@ public class PostServiceUT {
         User user = User.builder()
                 .id(userId)
                 .email("email")
+                .posts(new ArrayList<>())
                 .build();
 
         Post expected = Post.builder()
@@ -175,6 +176,8 @@ public class PostServiceUT {
                 .build();
 
         when(postRepository.findPostByIdWithAuthor(postId)).thenReturn(Optional.of(expected));
+        when(userService.userExists(user.getSub())).thenReturn(true);
+
         postService.deletePost(postId, user);
     }
 
@@ -216,6 +219,8 @@ public class PostServiceUT {
                 .build();
 
         when(postRepository.findPostByIdWithAuthor(postId)).thenReturn(Optional.of(expected));
+        when(userService.userExists(user.getSub())).thenReturn(true);
+
         postService.deletePost(postId, user);
     }
 

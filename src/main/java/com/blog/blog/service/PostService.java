@@ -118,6 +118,7 @@ public class PostService {
      * @param postId ID of the post
      * @param user   The user who is supposed to own the post
      * @throws PostNotFoundException If a post with postId doesn't exist
+     * @throws UserNotExistingException If User does not exist.
      * @throws UserNotOwnerException If the user is not the owner of the post
      */
     @Transactional
@@ -125,51 +126,18 @@ public class PostService {
         Post post = postRepository.findPostByIdWithAuthor(postId)
                 .orElseThrow(() -> new PostNotFoundException(String.format("Post with id %s does not exist", postId)));
 
+        if (!userService.userExists(user.getSub())) {
+            throw new UserNotExistingException(String.format("User with sub %s does not exist", user.getSub()));
+        }
+
         if (!post.getAuthor().equals(user)) {
             throw new UserNotOwnerException(String.format("User with email %s is not owner of post with id %s", user.getEmail(), postId));
         }
 
         post.remove();
+        entityManager.merge(user);
         postRepository.deleteById(postId);
     }
-
-
-//    @Transactional
-//    public Post updatePost(UUID postId, PostUpdate postUpdate, User user) {
-//        Set<ConstraintViolation<PostUpdate>> violations = validator.validate(postUpdate);
-//        if (!violations.isEmpty()) {
-//            throw new IllegalArgumentException("Illegal arguments for post");
-//        }
-//
-//        if (!userService.userExists(user.getSub())) {
-//            throw new UserNotExistingException(String.format("User with sub %s does not exist", user.getSub()));
-//        }
-//
-//        Optional<Post> postOptional = postRepository.findPostByIdWithAuthor(postId);
-//        Post post;
-//
-//        if (postOptional.isPresent()) {
-//            post = postOptional.get();
-//
-//            if (!post.getAuthor().equals(user)) {
-//                throw new UserNotOwnerException(String.format("User with email %s does not own post with id %s", user.getEmail(), postId));
-//            }
-//
-//            post.setTitle(postUpdate.title());
-//            post.setBody(postUpdate.body());
-//        } else {
-//            post = Post.builder()
-//                    .id(postId)
-//                    .author(user)
-//                    .title(postUpdate.title())
-//                    .body(postUpdate.body())
-//                    .build();
-//
-//            user = entityManager.merge(user);
-//            user.addPost(post);
-//        }
-//        return post;
-//    }
 
     /**
      * Updates a post by its ID. Creates a new post, if a post with postId does not already exist
@@ -221,6 +189,4 @@ public class PostService {
         }
 
     }
-
-
 }

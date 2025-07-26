@@ -88,9 +88,13 @@ public class PostController {
             case CREATED -> new ResponseEntity<>("Post created", HttpStatus.CREATED);
             case UPDATED -> new ResponseEntity<>("Post updated", HttpStatus.OK);
         };
-
-
     }
+
+//    @DeleteMapping("/{postId}")
+//    public ResponseEntity<String> deletePost(@PathVariable("postId") UUID postId) {
+//        return null;
+//
+//    }
 
 }
 
