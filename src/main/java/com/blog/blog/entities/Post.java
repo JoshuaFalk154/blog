@@ -22,10 +22,10 @@ public class Post  {
     //@GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column()
+    @Column(nullable = false)
     private String title;
 
-    @Column()
+    @Column(nullable = false, length = 1024)
     private String body;
 
     @Column
