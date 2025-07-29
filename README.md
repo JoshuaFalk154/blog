@@ -37,10 +37,6 @@ Die Blogging-App hat folgende Eigenschaften
     - Spring Web
 - Maven
 
-## Programm verwenden
-1. Projekt herunterladen und in einer IDE (z.B. Intellij IDEA) öffnen. Das Projekt muss als Maven-Projekt erkannt werden.
-2. Da Lombok verwendet wird, muss dies in der IDE konfiguriert werden.
-3. Programm ausführen.
-4. Öffnen in http://localhost:8080/
+
 
 
