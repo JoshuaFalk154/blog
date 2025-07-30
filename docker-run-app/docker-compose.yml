@@ -1,0 +1,40 @@
+services:
+  keycloak:
+    image: keycloak/keycloak
+    command: [ "start-dev", "--import-realm" ]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./keycloak/realms:/opt/keycloak/data/import/
+    healthcheck:
+      test: [
+        "CMD-SHELL",
+        'exec 3<>/dev/tcp/localhost/8080; echo -e "GET /health/ready HTTP/1.1\nhost: localhost:8080\n" >&3; timeout --preserve-status 1 cat <&3 | grep -m 1 status | grep -m 1 UP; ERROR=$?; exec 3<&-; exec 3>&-; exit $ERROR'
+      ]
+      interval: 5s
+      retries: 15
+  postgres:
+    image: 'postgres:latest'
+    environment:
+      - 'POSTGRES_DB=postgres'
+      - 'POSTGRES_PASSWORD=admin'
+      - 'POSTGRES_USER=postgres'
+    ports:
+      - '5000:5432'
+    volumes:
+      - ./app/postgres_data:/var/lib/postgresql/data
+  app:
+    image: 'joshua579/blog-app'
+    environment:
+      - SPRING_PROFILES_ACTIVE=demo
+      #- SWAGGER_SERVER_URL=http://localhost:8585
+    ports:
+      - '8585:8585'
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      postgres:
+        condition: service_started

@@ -6,6 +6,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtDecoders;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Profile("!test")
@@ -33,5 +39,18 @@ public class SecurityConfig {
                         )
                 );
         return http.build();
+    }
+
+    // Nur fuer Demo-Zwecke!
+    @Bean
+    @Profile("demo")
+    JwtDecoder jwtDecoder() {
+        NimbusJwtDecoder jwtDecoder = (NimbusJwtDecoder)
+                JwtDecoders.fromIssuerLocation("http://keycloak:8080/realms/blog");
+
+        OAuth2TokenValidator<Jwt> withIssuer = token -> OAuth2TokenValidatorResult.success();
+        jwtDecoder.setJwtValidator(withIssuer);
+
+        return jwtDecoder;
     }
 }
