@@ -39,6 +39,13 @@ Die Blogging-App hat folgende Eigenschaften
 - PostgreSQL
 - Docker
 
+## Schritte zum Ausführen des Programms
+1. **Projekt klonen:**  'git clone https://github.com/JoshuaFalk154/blog.git'
+2. **In Projekt navigieren:** Öffne Unterordner 'blog'
+3. **Programm starten**: Docker Desktop starten und in den Unterordner 'docker-run-app' wechseln und Container mit dem Befehl 'docker-compose up -d' starten
+4. **Browser öffnen**: http://localhost:8585/swagger-ui/index.html#/
+5. **SwaggerUi nutzen:** Stell sicher, dass du dich über den Button 'Authorize' über Keycloak registrierst
+
 
 
 
