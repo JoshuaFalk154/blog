@@ -36,6 +36,8 @@ Die Blogging-App hat folgende Eigenschaften
     - Spring Security
     - Spring Web
 - Maven
+- PostgreSQL
+- Docker
 
 
 
