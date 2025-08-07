@@ -1,5 +1,7 @@
 # Projekt
 
+Projekt is (vorübergehend) unter http://app.joshua-579.com/swagger-ui/index.html verwendbar.
+
 Simple Blogging-App, in der man Blog-Beiträge entdecken und liken kann.
 ## Beschreibung
 Die Blogging-App hat folgende Eigenschaften
